@@ -200,6 +200,16 @@ body{background-image:none}
   .sidefoot{grid-area:nav;align-self:end;margin:0;padding:0 16px 24px}
   .cards{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
 }
+
+/* 值班貓咪小卡片、下方卡片等高 */
+.sidefoot{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 8px 8px}
+.sidefoot .lbl{margin:0 6px 4px}
+@media (min-width:900px){
+  .sidefoot{margin:0 16px 24px;padding:12px 8px 8px}
+  .cards{align-items:stretch}
+  .cards>.panel{display:flex;flex-direction:column}
+  .cards>.panel .stats{flex:1;align-items:center}
+}
 </style>
 </head>
 <body data-mode="focus">
