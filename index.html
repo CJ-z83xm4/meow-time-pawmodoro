@@ -229,6 +229,15 @@ body{background-image:none}
 .addbtn{border:0;border-radius:999px;padding:8px 16px;background:var(--accent);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .catprev{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--sub)}
 .catprev img{width:44px;height:44px;border-radius:50%}
+
+.cropwrap{display:grid;gap:8px;justify-items:center}
+.crop{width:200px;height:200px;border-radius:50%;overflow:hidden;position:relative;touch-action:none;cursor:grab;background:var(--bg);box-shadow:0 0 0 3px var(--card),0 0 0 4px var(--line)}
+.crop:active{cursor:grabbing}
+.crop:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.crop img{position:absolute;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.cropctl{display:flex;align-items:center;gap:10px;width:100%;font-size:13px;color:var(--sub)}
+.cropctl input{flex:1;accent-color:var(--accent)}
+.cropwrap .hint{text-align:center}
 #catMsg{font-size:12.5px;min-height:1.3em;color:var(--sub)}
 #catMsg.err{color:#d0583e}
 .sw2{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px}
@@ -305,7 +314,11 @@ body{background-image:none}
         <label class="filebtn" for="catFile">選擇照片</label><input type="file" id="catFile" accept="image/*" hidden>
         <button class="addbtn" type="submit">新增</button>
       </form>
-      <div class="catprev" id="catPrev" hidden><img id="catPrevImg" alt=""><span>照片已選好，按「新增」加入</span></div>
+      <div class="cropwrap" id="cropWrap" hidden>
+        <div class="crop" id="crop" tabindex="0" role="img" aria-label="拖曳調整照片位置"><img id="cropImg" alt="" draggable="false"></div>
+        <div class="cropctl"><label for="cropZoom">縮放</label><input type="range" id="cropZoom" min="100" max="300" value="100"></div>
+        <p class="hint">用手指或滑鼠拖曳照片，讓貓咪的臉在圓圈中間。</p>
+      </div>
       <div id="catMsg" role="status"></div>
       <label class="sw2"><span>同時顯示預設貓咪</span><input type="checkbox" id="cShowDef"></label>
     </div>
@@ -461,20 +474,33 @@ function renderMyCats(){const ul=$('myCatList');ul.innerHTML='';
 function afterCatsChange(){refreshCats();if(!CATS.find(c=>c.id===cfg.cat))cfg.cat=CATS[0].id;buildCats();setCat(cfg.cat);renderMyCats();save()}
 function removeCat(id){customCats=customCats.filter(c=>c.id!==id);saveCats();if(!customCats.length)cfg.showDefault=true;catMsg('');afterCatsChange()}
 $('cShowDef').onchange=e=>{cfg.showDefault=e.target.checked;afterCatsChange()};
-let pendingCat=null;
-function cropToCircle(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),im=new Image();
- im.onload=()=>{try{const S=320,s=Math.min(im.naturalWidth,im.naturalHeight),sx=(im.naturalWidth-s)/2,sy=(im.naturalHeight-s)/2,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
-  g.beginPath();g.arc(S/2,S/2,S/2,0,Math.PI*2);g.closePath();g.clip();g.drawImage(im,sx,sy,s,s,0,0,S,S);URL.revokeObjectURL(url);res(c.toDataURL('image/webp',.88))}catch(x){rej(x)}};
- im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('image'))};im.src=url})}
-$('catFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];pendingCat=null;$('catPrev').hidden=true;catMsg('');if(!f)return;
- try{pendingCat=await cropToCircle(f);$('catPrevImg').src=pendingCat;$('catPrev').hidden=false}catch(x){catMsg('這張照片無法讀取，請換一張。',true)}};
+const CROP_V=200;let cropState=null;
+function cropScale(){return CROP_V/Math.min(cropState.w,cropState.h)*cropState.z}
+function clampCrop(){const s=cropScale();cropState.ox=Math.min(0,Math.max(CROP_V-cropState.w*s,cropState.ox));cropState.oy=Math.min(0,Math.max(CROP_V-cropState.h*s,cropState.oy))}
+function paintCrop(){if(!cropState)return;clampCrop();const s=cropScale(),im=$('cropImg');im.style.width=cropState.w*s+'px';im.style.height=cropState.h*s+'px';im.style.left=cropState.ox+'px';im.style.top=cropState.oy+'px'}
+function resetCrop(){if(cropState&&cropState.url)URL.revokeObjectURL(cropState.url);cropState=null;$('cropWrap').hidden=true;$('cropImg').removeAttribute('src');$('cropZoom').value=100}
+function loadCrop(f){const url=URL.createObjectURL(f),im=new Image();
+ im.onload=()=>{cropState={im,url,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};const s=cropScale();cropState.ox=(CROP_V-cropState.w*s)/2;cropState.oy=(CROP_V-cropState.h*s)/2;$('cropImg').src=url;$('cropZoom').value=100;$('cropWrap').hidden=false;paintCrop()};
+ im.onerror=()=>{URL.revokeObjectURL(url);catMsg('這張照片無法讀取，請換一張。',true)};im.src=url}
+function setCropZoom(z){if(!cropState)return;const mid=CROP_V/2,sOld=cropScale(),px=(mid-cropState.ox)/sOld,py=(mid-cropState.oy)/sOld;cropState.z=Math.max(1,Math.min(3,z));const sNew=cropScale();cropState.ox=mid-px*sNew;cropState.oy=mid-py*sNew;paintCrop()}
+$('cropZoom').oninput=e=>{setCropZoom(e.target.value/100)};
+(function(){const box=$('crop');let drag=null;
+ box.addEventListener('pointerdown',e=>{if(!cropState)return;drag={x:e.clientX,y:e.clientY,ox:cropState.ox,oy:cropState.oy};try{box.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+ box.addEventListener('pointermove',e=>{if(!drag||!cropState)return;cropState.ox=drag.ox+(e.clientX-drag.x);cropState.oy=drag.oy+(e.clientY-drag.y);paintCrop()});
+ const end=()=>{drag=null};box.addEventListener('pointerup',end);box.addEventListener('pointercancel',end);
+ box.addEventListener('wheel',e=>{if(!cropState)return;e.preventDefault();const z=Math.max(1,Math.min(3,cropState.z*(e.deltaY<0?1.08:1/1.08)));$('cropZoom').value=Math.round(z*100);setCropZoom(z)},{passive:false});
+ box.addEventListener('keydown',e=>{if(!cropState)return;const d={ArrowLeft:[10,0],ArrowRight:[-10,0],ArrowUp:[0,10],ArrowDown:[0,-10]}[e.key];if(!d)return;e.preventDefault();cropState.ox+=d[0];cropState.oy+=d[1];paintCrop()})})();
+function renderCrop(){const S=320,s=cropScale(),c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+ g.beginPath();g.arc(S/2,S/2,S/2,0,Math.PI*2);g.closePath();g.clip();g.drawImage(cropState.im,-cropState.ox/s,-cropState.oy/s,CROP_V/s,CROP_V/s,0,0,S,S);return c.toDataURL('image/webp',.88)}
+$('catFile').onchange=e=>{const f=e.target.files&&e.target.files[0];resetCrop();catMsg('');if(f)loadCrop(f)};
 $('catForm').onsubmit=e=>{e.preventDefault();const name=$('catName').value.trim();
  if(!name){catMsg('請輸入貓咪的名字。',true);return}
- if(!pendingCat){catMsg('請先選一張照片。',true);return}
+ if(!cropState){catMsg('請先選一張照片。',true);return}
  if(customCats.length>=8){catMsg('最多可以新增 8 隻。',true);return}
- const c={id:'c'+Date.now(),name:name,src:pendingCat};customCats.push(c);
+ let src;try{src=renderCrop()}catch(x){catMsg('這張照片處理失敗，請換一張。',true);return}
+ const c={id:'c'+Date.now(),name:name,src:src};customCats.push(c);
  if(!saveCats()){customCats.pop();catMsg('瀏覽器的儲存空間不夠，請先刪掉一隻再試。',true);return}
- pendingCat=null;$('catName').value='';$('catFile').value='';$('catPrev').hidden=true;catMsg('已新增「'+name+'」。');cfg.cat=c.id;afterCatsChange()};
+ resetCrop();$('catName').value='';$('catFile').value='';catMsg('已新增「'+name+'」。');cfg.cat=c.id;afterCatsChange()};
 buildCats();setCat(cfg.cat);renderTasks();renderMyCats();setMode('focus');say('idle');
 </script>
 </body>
