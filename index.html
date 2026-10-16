@@ -244,11 +244,13 @@ body{background-image:none}
 .sw2 input{width:18px;height:18px;accent-color:var(--accent)}
 .cats button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* 側邊欄：選單與值班貓咪緊接排列 */
+/* 側邊欄：值班貓咪與右邊兩張卡片同一列對齊（上緣、下緣、標題位置） */
 .sidenav{display:contents}
 @media (min-width:900px){
-  .sidenav{grid-area:nav;display:flex;flex-direction:column;gap:28px;align-self:start}
-  .sidefoot{grid-area:auto;align-self:auto;margin:0 16px}
+  .app{grid-template-areas:"logo head" "nav timer" "foot cards" ". .";grid-template-rows:auto auto auto 1fr}
+  .tabs{grid-area:nav;align-self:start}
+  .sidefoot{grid-area:foot;align-self:stretch;margin:0 16px 36px;padding:18px 10px 12px}
+  .sidefoot .lbl{display:flex;align-items:center;gap:7px;margin:0 8px 12px;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--sub);line-height:1.5}
 }
 </style>
 </head>
@@ -258,7 +260,7 @@ body{background-image:none}
   <div class="sidenav">
   <nav class="tabs" id="tabs"><button data-m="focus" class="on"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6.6" cy="10.4" rx="1.9" ry="2.5" transform="rotate(-18 6.6 10.4)"/><ellipse cx="10.3" cy="6.4" rx="1.9" ry="2.6"/><ellipse cx="14.7" cy="6.4" rx="1.9" ry="2.6"/><ellipse cx="18.4" cy="10.4" rx="1.9" ry="2.5" transform="rotate(18 18.4 10.4)"/><path d="M12.5 11.6c-3.1 0-6 3.3-6 5.7 0 1.8 1.7 2.4 3.1 2.1.9-.2 1.7-.6 2.9-.6s2 .4 2.9.6c1.4.3 3.1-.3 3.1-2.1 0-2.4-2.9-5.7-6-5.7z"/></svg>專注</button><button data-m="break"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5h12v4.2a4.3 4.3 0 0 1-4.3 4.3H8.3A4.3 4.3 0 0 1 4 14.7z"/><path d="M16 12h1.4a2.4 2.4 0 0 1 0 4.8H16"/><path d="M7.5 3.5c-.9 1 .9 1.8 0 3M11.5 3.5c-.9 1 .9 1.8 0 3"/></svg>小休息</button><button data-m="long"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z"/><path d="M17 3.5v3M15.5 5h3"/></svg>長休息</button></nav>
   <aside class="sidefoot">
-    <div class="lbl">值班貓咪</div>
+    <div class="lbl"><svg class="hic" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6.6" cy="10.4" rx="1.9" ry="2.5" transform="rotate(-18 6.6 10.4)"/><ellipse cx="10.3" cy="6.4" rx="1.9" ry="2.6"/><ellipse cx="14.7" cy="6.4" rx="1.9" ry="2.6"/><ellipse cx="18.4" cy="10.4" rx="1.9" ry="2.5" transform="rotate(18 18.4 10.4)"/><path d="M12.5 11.6c-3.1 0-6 3.3-6 5.7 0 1.8 1.7 2.4 3.1 2.1.9-.2 1.7-.6 2.9-.6s2 .4 2.9.6c1.4.3 3.1-.3 3.1-2.1 0-2.4-2.9-5.7-6-5.7z"/></svg>值班貓咪</div>
     <div class="cats" id="cats"></div>
   </aside>
   </div>
