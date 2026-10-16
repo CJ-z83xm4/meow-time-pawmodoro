@@ -244,12 +244,11 @@ body{background-image:none}
 .sw2 input{width:18px;height:18px;accent-color:var(--accent)}
 .cats button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* 側邊欄：值班貓咪與右邊兩張卡片同一列對齊（上緣、下緣、標題位置） */
+/* 側邊欄：選單與值班貓咪緊接排列 */
 .sidenav{display:contents}
 @media (min-width:900px){
-  .app{grid-template-areas:"logo head" "nav timer" "foot cards" ". .";grid-template-rows:auto auto auto 1fr}
-  .tabs{grid-area:nav;align-self:start}
-  .sidefoot{grid-area:foot;align-self:stretch;margin:0 16px 36px;padding:18px 10px 12px}
+  .sidenav{grid-area:nav;display:flex;flex-direction:column;gap:28px;align-self:start}
+  .sidefoot{grid-area:auto;align-self:auto;margin:0 16px;padding:18px 10px 12px}
   .sidefoot .lbl{display:flex;align-items:center;gap:7px;margin:0 8px 12px;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--sub);line-height:1.5}
 }
 </style>
