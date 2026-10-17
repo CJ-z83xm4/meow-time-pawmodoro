@@ -259,6 +259,20 @@ body{background-image:none}
 .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .seg button{border:0;background:none;color:var(--sub);font:inherit;font-size:13px;padding:5px 11px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--accent);color:#fff;font-weight:700}
+
+/* 設定視窗：圓形選照片鈕、開關、底部留白 */
+.catform{flex-wrap:nowrap}
+.photobtn{width:44px;height:44px;border-radius:50%;border:1.5px dashed var(--sub);display:flex;align-items:center;justify-content:center;color:var(--sub);cursor:pointer;flex:none;background-size:cover;background-position:center}
+.photobtn.has{border:2px solid var(--accent)}
+.photobtn.has svg{display:none}
+.catform input[type=text]{min-width:0;width:0;flex:1 1 0}
+.set input[type=checkbox],.sw2 input[type=checkbox]{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:color-mix(in srgb,var(--sub) 40%,var(--card));border:0;position:relative;cursor:pointer;flex:none;transition:background .2s;margin:0}
+.set input[type=checkbox]::before,.sw2 input[type=checkbox]::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.set input[type=checkbox]:checked,.sw2 input[type=checkbox]:checked{background:var(--accent)}
+.set input[type=checkbox]:checked::before,.sw2 input[type=checkbox]:checked::before{transform:translateX(18px)}
+.set input[type=checkbox]:focus-visible,.sw2 input[type=checkbox]:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.sw2 input[type=checkbox]:disabled{opacity:.45;cursor:default}
+.sheet{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body data-mode="focus">
@@ -326,11 +340,11 @@ body{background-image:none}
       </div>
     <div class="mycats">
       <div class="mh">我的值班貓咪</div>
-      <p class="hint">照片只存在這個瀏覽器裡，不會上傳。最多 8 隻。</p>
+      <p class="hint">點左邊的圓圈選照片。照片只存在這個瀏覽器裡，不會上傳，最多 8 隻。</p>
       <ul id="myCatList"></ul>
       <form class="catform" id="catForm">
+        <label class="photobtn" id="photoBtn" for="catFile" title="選擇照片" aria-label="選擇照片"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-1.8A1 1 0 0 1 9.5 4.8h5a1 1 0 0 1 .8.4L16.5 7h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.2"/></svg></label><input type="file" id="catFile" accept="image/*" hidden>
         <input type="text" id="catName" maxlength="8" placeholder="貓咪名字" autocomplete="off">
-        <label class="filebtn" for="catFile">選擇照片</label><input type="file" id="catFile" accept="image/*" hidden>
         <button class="addbtn" type="submit">新增</button>
       </form>
       <div class="cropwrap" id="cropWrap" hidden>
@@ -497,9 +511,9 @@ const CROP_V=200;let cropState=null;
 function cropScale(){return CROP_V/Math.min(cropState.w,cropState.h)*cropState.z}
 function clampCrop(){const s=cropScale();cropState.ox=Math.min(0,Math.max(CROP_V-cropState.w*s,cropState.ox));cropState.oy=Math.min(0,Math.max(CROP_V-cropState.h*s,cropState.oy))}
 function paintCrop(){if(!cropState)return;clampCrop();const s=cropScale(),im=$('cropImg');im.style.width=cropState.w*s+'px';im.style.height=cropState.h*s+'px';im.style.left=cropState.ox+'px';im.style.top=cropState.oy+'px'}
-function resetCrop(){if(cropState&&cropState.url)URL.revokeObjectURL(cropState.url);cropState=null;$('cropWrap').hidden=true;$('cropImg').removeAttribute('src');$('cropZoom').value=100}
+function resetCrop(){$('photoBtn').style.backgroundImage='';$('photoBtn').classList.remove('has');if(cropState&&cropState.url)URL.revokeObjectURL(cropState.url);cropState=null;$('cropWrap').hidden=true;$('cropImg').removeAttribute('src');$('cropZoom').value=100}
 function loadCrop(f){const url=URL.createObjectURL(f),im=new Image();
- im.onload=()=>{cropState={im,url,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};const s=cropScale();cropState.ox=(CROP_V-cropState.w*s)/2;cropState.oy=(CROP_V-cropState.h*s)/2;$('cropImg').src=url;$('cropZoom').value=100;$('cropWrap').hidden=false;paintCrop()};
+ im.onload=()=>{$('photoBtn').style.backgroundImage='url('+url+')';$('photoBtn').classList.add('has');cropState={im,url,w:im.naturalWidth,h:im.naturalHeight,z:1,ox:0,oy:0};const s=cropScale();cropState.ox=(CROP_V-cropState.w*s)/2;cropState.oy=(CROP_V-cropState.h*s)/2;$('cropImg').src=url;$('cropZoom').value=100;$('cropWrap').hidden=false;paintCrop()};
  im.onerror=()=>{URL.revokeObjectURL(url);catMsg('這張照片無法讀取，請換一張。',true)};im.src=url}
 function setCropZoom(z){if(!cropState)return;const mid=CROP_V/2,sOld=cropScale(),px=(mid-cropState.ox)/sOld,py=(mid-cropState.oy)/sOld;cropState.z=Math.max(1,Math.min(3,z));const sNew=cropScale();cropState.ox=mid-px*sNew;cropState.oy=mid-py*sNew;paintCrop()}
 $('cropZoom').oninput=e=>{setCropZoom(e.target.value/100)};
