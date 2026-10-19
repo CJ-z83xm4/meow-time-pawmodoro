@@ -256,7 +256,7 @@ body{background-image:none}
 }
 
 .set>input[type=number]{justify-self:end}
-.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg{justify-self:end;display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .seg button{border:0;background:none;color:var(--sub);font:inherit;font-size:13px;padding:5px 11px;border-radius:999px;cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--accent);color:#fff;font-weight:700}
 
@@ -330,6 +330,8 @@ body{background-image:none}
     <div class="shsub">時間單位：分鐘</div>
     <div class="set">
         <span>外觀</span><div class="seg" id="themeSeg" role="group" aria-label="外觀"><button type="button" data-t="auto">跟隨系統</button><button type="button" data-t="light">淺色</button><button type="button" data-t="dark">深色</button></div>
+        <span>提醒音量</span><div class="seg" id="volSeg" role="group" aria-label="提醒音量"><button type="button" data-v="low">小聲</button><button type="button" data-v="mid">中</button><button type="button" data-v="high">大聲</button></div>
+        <span>試聽提醒音</span><button type="button" class="addbtn" id="testSound" style="justify-self:end">播放</button>
         <span>專注時間</span><input type="number" id="cFocus" min="1" max="120">
         <span>小休息</span><input type="number" id="cBreak" min="1" max="60">
         <span>長休息</span><input type="number" id="cLong" min="1" max="90">
@@ -381,7 +383,7 @@ const MSG={
 };
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const defCfg={focus:25,brk:5,long:15,every:4,water:30,auto:false,notif:false,sound:true,cat:'banban',showDefault:true,theme:'auto'};
+const defCfg={focus:25,brk:5,long:15,every:4,water:30,auto:false,notif:false,sound:true,cat:'banban',showDefault:true,theme:'auto',vol:'high'};
 let cfg=Object.assign({},defCfg,store.get('bbz_cfg',{}));
 let customCats=store.get('bbz_cats',[]);if(!Array.isArray(customCats))customCats=[];
 let CATS=[];
@@ -399,15 +401,21 @@ const R=2*Math.PI*47;$('ring').style.strokeDasharray=R;
 const dur=m=>({focus:cfg.focus,break:cfg.brk,long:cfg.long}[m])*60;
 
 /* 聲音 */
-let ac;const A=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
-function tone(f,t,d,type='sine',v=.15){const c=A(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,c.currentTime+t);g.gain.linearRampToValueAtTime(v,c.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+d);o.connect(g).connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+.05)}
-function meow(){if(!cfg.sound)return;try{const c=A(),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.type='sawtooth';f.type='bandpass';f.Q.value=3;const t=c.currentTime;
- o.frequency.setValueAtTime(520,t);o.frequency.linearRampToValueAtTime(900,t+.18);o.frequency.linearRampToValueAtTime(600,t+.6);
- f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(1700,t+.25);f.frequency.linearRampToValueAtTime(900,t+.6);
- g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.22,t+.08);g.gain.linearRampToValueAtTime(.12,t+.35);g.gain.linearRampToValueAtTime(0,t+.65);
- o.connect(f).connect(g).connect(c.destination);o.start(t);o.stop(t+.7)}catch(e){}}
-function chime(){if(!cfg.sound)return;try{[660,880,1100].forEach((f,i)=>tone(f,i*.16,.5,'sine',.14))}catch(e){}}
-function drop(){if(!cfg.sound)return;try{tone(900,0,.12,'sine',.12);tone(1300,.12,.18,'sine',.1)}catch(e){}}
+let ac,master;
+const A=()=>{if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();const comp=ac.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=6;master=ac.createGain();master.gain.value=1;master.connect(comp);comp.connect(ac.destination)}return ac};
+const VOLS={low:.5,mid:1,high:1.8};
+const vol=()=>VOLS[cfg.vol]||VOLS.high;
+function tone(f,t,d,type='sine',v=.3){const c=A(),s=c.currentTime+t,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(Math.min(1,v*vol()),s+.015);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.connect(g);g.connect(master);o.start(s);o.stop(s+d+.05)}
+function meow1(at){const c=A(),o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(),t=c.currentTime+at;o.type='sawtooth';f.type='bandpass';f.Q.value=2.5;
+ o.frequency.setValueAtTime(520,t);o.frequency.linearRampToValueAtTime(900,t+.2);o.frequency.linearRampToValueAtTime(600,t+.7);
+ f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(1700,t+.28);f.frequency.linearRampToValueAtTime(900,t+.7);
+ const pk=Math.min(1,.55*vol());g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+.08);g.gain.linearRampToValueAtTime(pk*.6,t+.4);g.gain.linearRampToValueAtTime(0,t+.75);
+ o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.8)}
+function buzz(){try{if(navigator.vibrate)navigator.vibrate([250,120,250])}catch(e){}}
+function meow(){if(!cfg.sound)return;try{meow1(0);meow1(.95)}catch(e){}buzz()}
+function chime(){if(!cfg.sound)return;try{[0,1.2].forEach(o=>[1047,1319,1568,2093].forEach((f,i)=>{tone(f,o+i*.17,.8,'triangle',.4);tone(f*2,o+i*.17,.4,'sine',.12)}))}catch(e){}buzz()}
+function drop(){if(!cfg.sound)return;try{tone(900,0,.14,'sine',.25);tone(1300,.12,.2,'sine',.22)}catch(e){}}
+function dropAlert(){if(!cfg.sound)return;try{[0,.7].forEach(o=>{tone(900,o,.18,'sine',.5);tone(1350,o+.15,.28,'sine',.45)})}catch(e){}}
 
 /* 畫面 */
 function setCat(id){cfg.cat=id;const c=cat(),im=$('cat');im.src=c.src;im.className=c.mul?'mul':'';
@@ -437,7 +445,7 @@ function start(){if(running)return;try{A().resume()}catch(e){}running=true;endAt
 function stop(){running=false;clearInterval(tick);document.body.classList.remove('running');$('go').textContent=left<total?'繼續陪我':'開始陪我'}
 let lastTick=0;
 function step(){const now=Date.now();const prev=left;left=(endAt-now)/1000;
- if(mode==='focus'){waterLeft-=(prev-left);if(waterLeft<=0&&left>20){waterLeft=waterEvery;toast(pick(MSG.water).replace(/\{n\}/g,cat().name),'喝水時間',()=>{meow();setTimeout(drop,700)})}
+ if(mode==='focus'){waterLeft-=(prev-left);if(waterLeft<=0&&left>20){waterLeft=waterEvery;toast(pick(MSG.water).replace(/\{n\}/g,cat().name),'喝水時間',()=>{meow();setTimeout(dropAlert,2000)})}
   if(Math.floor(left)%300===0&&Math.floor(left)!==lastTick&&left>10&&left<total-5){lastTick=Math.floor(left);say('focus')}}
  if(left<=0){left=0;draw();finish()}else draw()}
 function finish(){stop();$('toast').classList.remove('show');
@@ -540,7 +548,11 @@ function applyTheme(){const r=document.documentElement,v=cfg.theme;
  if(v==='light'||v==='dark')r.setAttribute('data-theme',v);else if(hostTheme)r.setAttribute('data-theme',hostTheme);else r.removeAttribute('data-theme');
  document.querySelectorAll('#themeSeg button').forEach(b=>{const on=b.dataset.t===(v==='light'||v==='dark'?v:'auto');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
 document.querySelectorAll('#themeSeg button').forEach(b=>b.onclick=()=>{cfg.theme=b.dataset.t;applyTheme();save()});
-buildCats();setCat(cfg.cat);renderTasks();renderMyCats();applyTheme();setMode('focus');say('idle');
+/* 提醒音量與試聽 */
+function applyVol(){const v=cfg.vol||'high';document.querySelectorAll('#volSeg button').forEach(b=>{const on=b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
+document.querySelectorAll('#volSeg button').forEach(b=>b.onclick=()=>{cfg.vol=b.dataset.v;applyVol();save()});
+$('testSound').onclick=()=>{try{A().resume()}catch(e){}const s=cfg.sound;cfg.sound=true;meow();setTimeout(()=>{chime();setTimeout(()=>{cfg.sound=s},60)},2000)};
+buildCats();setCat(cfg.cat);renderTasks();renderMyCats();applyTheme();applyVol();setMode('focus');say('idle');
 </script>
 </body>
 </html>
