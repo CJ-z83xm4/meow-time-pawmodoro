@@ -28,7 +28,7 @@
 <link rel="shortcut icon" href="favicon.ico">
 <style>
 :root{
-  --bg:#fbf1e3;--panel:rgba(255,251,245,.78);--card:#fffaf2;--ink:#5a4436;--sub:#9b8671;--line:rgba(120,90,60,.14);
+  --bg:#fbf1e3;--panel:rgba(255,251,245,.78);--card:#fffaf2;--ink:#5a4436;--sub:#7d6a5a;--line:rgba(120,90,60,.14);
   --focus:#ee8a5b;--break:#cf8a86;--long:#d9a23f;--water:#d98f7a;--pee:#d9a23f;--accent:var(--focus);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#2a2019;--panel:rgba(62,48,38,.72);--card:#3a2d23;--ink:#f6e7d4;--sub:#c2a98d;--line:rgba(255,235,210,.12)}}
@@ -40,7 +40,7 @@ body[data-mode=break]{--accent:var(--break)}
 body[data-mode=long]{--accent:var(--long)}
 .wrap{max-width:460px;margin:0 auto;padding:16px 18px 28px}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.quote{text-align:center;font-size:12.5px;font-style:italic;line-height:1.55;color:#e57a43;min-height:3.1em;display:flex;align-items:center;justify-content:center;padding:0 14px;margin-bottom:10px;transition:opacity .6s}
+.quote{text-align:center;font-size:12.5px;font-weight:500;font-style:italic;line-height:1.55;color:#e57a43;min-height:3.1em;display:flex;align-items:center;justify-content:center;padding:0 14px;margin-bottom:10px;transition:opacity .6s}
 .quote.fade{opacity:0}
 .logo{display:flex;align-items:center;gap:16px}
 .logo img{width:48px;height:48px;border-radius:50%;border:2px solid var(--card);box-shadow:0 2px 10px rgba(120,80,40,.22)}
@@ -81,7 +81,7 @@ body[data-mode=break].running .catbox img,body[data-mode=long].running .catbox i
 body:not([data-mode=focus]).running .zz{animation:zz 3s linear infinite}
 body:not([data-mode=focus]).running .zz:nth-of-type(2){animation-delay:1.2s;right:18%}
 @keyframes zz{0%{opacity:0;transform:translate(0,20px) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translate(14px,-40px) scale(1.2)}}
-.time{text-align:center;font-size:52px;font-weight:700;letter-spacing:3px;font-variant-numeric:tabular-nums;line-height:1.1}
+.time{text-align:center;font-size:52px;font-weight:600;letter-spacing:3px;font-variant-numeric:tabular-nums;line-height:1.1}
 .say{text-align:center;min-height:42px;color:var(--sub);font-size:14px;padding:8px 10px 0;line-height:1.55}
 .ctrl{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 16px}
 .btn{border:0;border-radius:999px;padding:12px 36px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;box-shadow:none;transition:.15s}
@@ -273,6 +273,11 @@ body{background-image:none}
 .set input[type=checkbox]:focus-visible,.sw2 input[type=checkbox]:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .sw2 input[type=checkbox]:disabled{opacity:.45;cursor:default}
 .sheet{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
+
+/* 字體精修：小字對比與字級、計時字重、英文句子字重 */
+.quote{font-weight:500}
+.cats button,.sidefoot .cats button{font-size:12.5px}
+.stat span,.dots em,.mycats .hint,.nl,.nextline{font-size:12.5px}
 </style>
 </head>
 <body data-mode="focus">
