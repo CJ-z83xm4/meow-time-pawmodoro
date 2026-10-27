@@ -27,12 +27,31 @@
 <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
 <link rel="shortcut icon" href="favicon.ico">
 <style>
+/* 斑斑品牌 tokens（來自 banban-tokens.css） */
+/* 斑斑品牌 Design Tokens v0.1 — 各工具檔頭貼同一份 */
 :root{
-  --bg:#fbf1e3;--panel:rgba(255,251,245,.78);--card:#fffaf2;--ink:#5a4436;--sub:#7d6a5a;--line:rgba(120,90,60,.14);
+  --bg:#fbf6ef; --card:#ffffff; --ink:#3a2f2a; --muted:#6b5a4f; --muted-soft:#8a7b72; --line:#e6ddd0;
+  --accent:#e07a3f; --accent-soft:#fff0e3; --accent-ink:#b4531a; --btn:#5a4033;
+  --ok:#c98a1b; --danger:#b3361f;
+  --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --r-sm:8px; --r-md:14px; --r-lg:24px; --r-pill:999px;
+  --sh-1:0 1px 3px rgba(120,80,40,.10); --sh-2:0 6px 24px rgba(120,80,40,.06);
+  --focus-ring:0 0 0 3px rgba(224,122,63,.15);
+}
+:root[data-mode="pro"]{ --r-md:8px; --r-lg:12px; }
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme=light]){color-scheme:dark; --bg:#2a2019; --card:#3a2d23; --ink:#f6e7d4; --muted:#c2a98d; --line:#4a3a2e;
+         --accent:#f09a6e; --accent-soft:rgba(240,154,110,.14); --accent-ink:#ffc2a0; }
+}
+:root[data-theme=dark]{color-scheme:dark; --bg:#2a2019; --card:#3a2d23; --ink:#f6e7d4; --muted:#c2a98d; --line:#4a3a2e;
+  --accent:#f09a6e; --accent-soft:rgba(240,154,110,.14); --accent-ink:#ffc2a0;}
+
+:root{
+  --panel:rgba(255,251,245,.78);--sub:var(--muted);--line:rgba(120,90,60,.14);
   --focus:#ee8a5b;--break:#cf8a86;--long:#d9a23f;--water:#d98f7a;--pee:#d9a23f;--accent:var(--focus);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#2a2019;--panel:rgba(62,48,38,.72);--card:#3a2d23;--ink:#f6e7d4;--sub:#c2a98d;--line:rgba(255,235,210,.12)}}
-:root[data-theme=dark]{--bg:#2a2019;--panel:rgba(62,48,38,.72);--card:#3a2d23;--ink:#f6e7d4;--sub:#c2a98d;--line:rgba(255,235,210,.12);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--panel:rgba(62,48,38,.72);--sub:#c2a98d;--line:rgba(255,235,210,.12)}}
+:root[data-theme=dark]{--panel:rgba(62,48,38,.72);--sub:#c2a98d;--line:rgba(255,235,210,.12);color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   background-image:radial-gradient(ellipse at 0% 0%,rgba(238,138,91,.14),transparent 45%),radial-gradient(ellipse at 100% 100%,rgba(207,138,134,.16),transparent 45%);background-attachment:fixed}
@@ -142,9 +161,9 @@ footer{text-align:center;color:var(--sub);font-size:12px;margin-top:16px;opacity
 }
 
 /* ===== 側邊欄版型 ===== */
-:root{--bg:#faf4ec;--card:#fffdf9;--side:#fffbf6;--line:rgba(120,90,60,.14)}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#2a2019;--card:#3a2d23;--side:rgba(50,38,30,.85)}}
-:root[data-theme=dark]{--bg:#2a2019;--card:#3a2d23;--side:rgba(50,38,30,.85);color-scheme:dark}
+:root{--side:#fffbf6;--line:rgba(120,90,60,.14)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--side:rgba(50,38,30,.85)}}
+:root[data-theme=dark]{--side:rgba(50,38,30,.85);color-scheme:dark}
 body{background-image:none}
 .app{display:grid;grid-template-columns:1fr auto;grid-template-areas:"logo btns" "nav nav" "head head" "timer timer" "cards cards" "foot foot";column-gap:12px;padding:16px 18px 28px;max-width:560px;margin:0 auto;align-items:center}
 .logo{grid-area:logo;display:flex;align-items:center;gap:14px}
