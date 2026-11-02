@@ -299,6 +299,54 @@ body{background-image:none}
 .quote{font-weight:500}
 .cats button,.sidefoot .cats button{font-size:12.5px}
 .stat span,.dots em,.mycats .hint,.nl,.nextline{font-size:12.5px}
+
+/* ===== 斑斑踏踏獎勵（完成一輪專注後） ===== */
+/* 踏踏獎勵動畫 v0.2（定案：標準版、手手從下方伸出）：完成 4 個專注後，兩隻貓手手交替踩毯子。
+   用法：外層加 class="knead"；要播放時再加上 .play（用 JS 或任何方式）。
+   純 CSS 動畫，沒有 JS 邏輯。系統設定「減少動態」時只顯示靜態的手手與文字。 */
+.knead{--cycle:1.7s;position:relative;width:min(100%,360px);margin:0 auto;padding:18px 0 8px;text-align:center}
+.knead .blanket{position:relative;height:150px;border-radius:26px;overflow:hidden;
+  background:
+    radial-gradient(circle at 12px 12px,#fff7 2px,transparent 3px) 0 0/28px 28px,
+    linear-gradient(135deg,#fde7c8,#fbd9ae);
+  border:2px solid #f0c795;box-shadow:inset 0 3px 10px #b4531a22,0 6px 22px #78503c22}
+.knead .paw{position:absolute;bottom:-34px;width:84px;height:84px;transform-origin:50% 100%}
+.knead .paw.l{left:calc(50% - 90px)} .knead .paw.r{left:calc(50% + 6px)}
+.knead .paw svg{width:100%;height:100%;overflow:visible;display:block}
+/* 毯子被踩出的小凹陷：跟著手手同步出現又消失 */
+.knead .dent{position:absolute;bottom:34px;width:70px;height:26px;border-radius:50%;background:#e9b478;opacity:0;filter:blur(2px)}
+.knead .dent.l{left:calc(50% - 83px)} .knead .dent.r{left:calc(50% + 13px)}
+.knead .msg{margin:14px 0 0;font-weight:700;color:var(--time,#b4531a);opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.knead .hearts i{position:absolute;top:34px;font-style:normal;font-size:20px;opacity:0}
+.knead .hearts i:nth-child(1){left:22%}.knead .hearts i:nth-child(2){left:50%}.knead .hearts i:nth-child(3){left:76%}
+
+.knead.play .paw{animation:press var(--cycle) ease-in-out infinite}
+.knead.play .paw.r{animation-delay:calc(var(--cycle)/-2)}
+.knead.play .dent{animation:dent var(--cycle) ease-in-out infinite}
+.knead.play .dent.r{animation-delay:calc(var(--cycle)/-2)}
+.knead.play .msg{opacity:1;transform:none}
+.knead.play .hearts i{animation:floatUp 2.6s ease-out infinite}
+.knead.play .hearts i:nth-child(2){animation-delay:.9s}.knead.play .hearts i:nth-child(3){animation-delay:1.7s}
+
+@keyframes press{
+  0%,100%{transform:translateY(0) rotate(0) scale(1,1)}
+  30%{transform:translateY(calc(var(--lift,46px)*-1*var(--dir,1))) rotate(calc(var(--rot,0deg)*var(--rs,1))) scale(1.04,var(--sy,.92))}
+  42%{transform:translateY(calc(var(--lift,46px)*-1*var(--dir,1))) rotate(calc(var(--rot,0deg)*var(--rs,1))) scale(1.07,calc(var(--sy,.92) - .02))}
+  70%{transform:translateY(calc(-6px*var(--dir,1))) rotate(0) scale(.98,1.02)}}
+.knead .paw.l{--rs:1}.knead .paw.r{--rs:-1}
+@keyframes dent{0%,100%{opacity:0;transform:scale(.6)}35%,45%{opacity:.75;transform:scale(1)}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(20px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translateY(-34px) scale(1.1)}}
+/* 系統開了「減少動態」時不播放，只顯示靜態手手。預覽時可加 .force 強制播放 */
+@media(prefers-reduced-motion:reduce){.knead.play:not(.force) .paw,.knead.play:not(.force) .dent,.knead.play:not(.force) .hearts i{animation:none}
+  .knead.play:not(.force) .paw{transform:translateY(-30px)}}
+
+
+.kneadModal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(42,32,25,.5);padding:20px}
+.kneadModal.show{display:flex}
+.kneadCard{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:22px 22px 18px;max-width:400px;width:100%;box-shadow:0 14px 36px rgba(0,0,0,.25);text-align:center}
+.kneadCard h3{margin:0 0 4px;font-size:20px}.kneadCard p.sub{margin:0 0 6px;color:var(--muted);font-size:14px}
+.kneadCard button{font:inherit;font-weight:700;margin-top:14px;border:0;border-radius:999px;padding:9px 26px;background:var(--btn);color:#fff;cursor:pointer}
+.kneadCard .knead .msg{color:var(--accent-ink)}
 </style>
 </head>
 <body data-mode="focus">
@@ -386,6 +434,9 @@ body{background-image:none}
   </div>
 </div>
 
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="paw" viewBox="-8 -2 104 102"><defs><clipPath id="c"><ellipse cx="44" cy="56" rx="29" ry="22"/><path d="M22 100C22 88 21 78 19 66H69C67 78 66 88 66 100Z"/><ellipse cx="19.5" cy="42" rx="11" ry="11.5" transform="rotate(-22 19.5 42)"/><ellipse cx="35.5" cy="26.5" rx="11.5" ry="12" transform="rotate(-7 35.5 26.5)"/><ellipse cx="52.5" cy="26.5" rx="11.5" ry="12" transform="rotate(7 52.5 26.5)"/><ellipse cx="68.5" cy="42" rx="11" ry="11.5" transform="rotate(22 68.5 42)"/></clipPath><clipPath id="m"><ellipse cx="44" cy="58" rx="12.5" ry="9.8"/></clipPath></defs><g fill="#8a6a55" stroke="#8a6a55" stroke-width="7" stroke-linejoin="round"><ellipse cx="44" cy="56" rx="29" ry="22"/><path d="M22 100C22 88 21 78 19 66H69C67 78 66 88 66 100Z"/><ellipse cx="19.5" cy="42" rx="11" ry="11.5" transform="rotate(-22 19.5 42)"/><ellipse cx="35.5" cy="26.5" rx="11.5" ry="12" transform="rotate(-7 35.5 26.5)"/><ellipse cx="52.5" cy="26.5" rx="11.5" ry="12" transform="rotate(7 52.5 26.5)"/><ellipse cx="68.5" cy="42" rx="11" ry="11.5" transform="rotate(22 68.5 42)"/></g><g fill="#fff"><ellipse cx="44" cy="56" rx="29" ry="22"/><path d="M22 100C22 88 21 78 19 66H69C67 78 66 88 66 100Z"/><ellipse cx="19.5" cy="42" rx="11" ry="11.5" transform="rotate(-22 19.5 42)"/><ellipse cx="35.5" cy="26.5" rx="11.5" ry="12" transform="rotate(-7 35.5 26.5)"/><ellipse cx="52.5" cy="26.5" rx="11.5" ry="12" transform="rotate(7 52.5 26.5)"/><ellipse cx="68.5" cy="42" rx="11" ry="11.5" transform="rotate(22 68.5 42)"/></g><g clip-path="url(#c)"><path d="M0 78C14 74 28 82 40 77C47 86 46 94 43 104H0Z" fill="#a39382"/><g fill="none" stroke="#6b5a4c" stroke-width="4.5" stroke-linecap="round"><path d="M16 86Q27 90 38 85"/><path d="M15 95Q26 99 37 94"/></g></g><g fill="#f4a7ad"><ellipse cx="44" cy="58" rx="12.5" ry="9.8"/><ellipse cx="21.5" cy="43.5" rx="6.1" ry="6.7" transform="rotate(-22 21.5 43.5)"/><ellipse cx="36.2" cy="28" rx="6.3" ry="7" transform="rotate(-7 36.2 28)"/><ellipse cx="51.8" cy="28" rx="6.3" ry="7" transform="rotate(7 51.8 28)"/><ellipse cx="66.5" cy="43.5" rx="6.1" ry="6.7" transform="rotate(22 66.5 43.5)"/></g><path clip-path="url(#m)" d="M42 48H58V69H50.500C51.500 65 51.500 63 50.500 61C47.500 61.500 45.500 59 43.500 58.500C41.500 57 41 52 42 48Z" fill="#9b7b66"/></symbol></defs></svg><div class="kneadModal" id="kneadModal" role="dialog" aria-modal="true" aria-label="踏踏獎勵"><div class="kneadCard"><h3 id="kneadTitle">完成一輪專注了！</h3><p class="sub" id="kneadSub"></p>
+<div class="knead" id="kneadBox"><div class="blanket"><i class="dent l"></i><i class="dent r"></i><div class="hearts"><i>♡</i><i>♡</i><i>♡</i></div><div class="paw l"><svg><use href="#paw"/></svg></div><div class="paw r"><svg><use href="#paw"/></svg></div></div><p class="msg" id="kneadMsg">踏踏中…</p></div>
+<button id="kneadOk" type="button">好喔</button></div></div>
 <div class="toast" id="toast"><img id="toastImg" alt=""><p id="toastTxt"></p><button id="toastOk">好喔</button></div>
 
 <script>
@@ -474,9 +525,13 @@ function step(){const now=Date.now();const prev=left;left=(endAt-now)/1000;
  if(mode==='focus'){waterLeft-=(prev-left);if(waterLeft<=0&&left>20){waterLeft=waterEvery;toast(pick(MSG.water).replace(/\{n\}/g,cat().name),'喝水時間',()=>{meow();setTimeout(dropAlert,2000)})}
   if(Math.floor(left)%300===0&&Math.floor(left)!==lastTick&&left>10&&left<total-5){lastTick=Math.floor(left);say('focus')}}
  if(left<=0){left=0;draw();finish()}else draw()}
+
+let kneadT;function showKnead(){const m=$('kneadModal'),b=$('kneadBox'),n=cat().name;$('kneadSub').textContent='連續專注 '+cfg.every+' 次，辛苦了';$('kneadMsg').textContent=n+'踏踏中，獎勵你喵';b.classList.remove('play');void b.offsetWidth;b.classList.add('play');m.classList.add('show');clearTimeout(kneadT);kneadT=setTimeout(hideKnead,12000)}
+function hideKnead(){clearTimeout(kneadT);$('kneadModal').classList.remove('show');$('kneadBox').classList.remove('play')}
+$('kneadOk').onclick=hideKnead;$('kneadModal').onclick=e=>{if(e.target===e.currentTarget)hideKnead()};
 function finish(){stop();$('toast').classList.remove('show');
  if(mode==='focus'){stats.f++;focusDone++;save();
-  if(focusDone>=cfg.every){focusDone=0;toast(pick(MSG.long).replace(/\{n\}/g,cat().name),'專注完成！',chime);setMode('long',1)}
+  if(focusDone>=cfg.every){focusDone=0;toast(pick(MSG.long).replace(/\{n\}/g,cat().name),'專注完成！',chime);setMode('long',1);showKnead()}
   else{toast(pick(MSG.breakStart).replace(/\{n\}/g,cat().name),'休息時間到',chime);setMode('break',1)}
   setTimeout(()=>say(mode==='long'?'long':'pee'),0);
   if(cfg.auto)start();else $('go').textContent='開始休息'}
